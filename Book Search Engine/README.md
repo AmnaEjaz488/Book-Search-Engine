@@ -1,5 +1,5 @@
 
-# 📚 Book Search Engine - GraphQL Edition
+# 📚 Book Search Engine 
 
 ## Description
 This is a full-stack MERN application that allows users to search for books using the Google Books API, create an account, and save their favorite books. This updated version of the Book Search Engine replaces the existing RESTful API with GraphQL using Apollo Server, and integrates authentication, client-server communication, and deployment through Render and MongoDB Atlas.
