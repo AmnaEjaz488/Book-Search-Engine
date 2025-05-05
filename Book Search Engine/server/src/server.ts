@@ -3,7 +3,7 @@ import path from 'node:path';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { json } from 'body-parser';
-import { authenticateToken } from './services/auth';
+import { signToken, authenticateToken } from './services/auth.js';
 import db from './config/connection.js';
 import typeDefs from './schemas/typeDefs';
 import resolvers from './schemas/resolvers';
@@ -16,7 +16,13 @@ const server = new ApolloServer({
   resolvers,
 });
 
-await server.start();
+(async () => {
+  await server.start();
+})();
+
+// Example usage of signToken
+const token = signToken('username', 'email@example.com', 'userId');
+console.log(`Generated token: ${token}`);
 
 // Use expressMiddleware for Apollo Server
 app.use(

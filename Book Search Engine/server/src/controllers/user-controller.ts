@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 // import user model
 import User from '../models/User.js';
+import type { UserDocument } from '../models/User.js';
 // import sign token function from auth
 import { signToken } from '../services/auth.js';
 
@@ -24,25 +25,32 @@ export const createUser = async (req: Request, res: Response) => {
   if (!user) {
     return res.status(400).json({ message: 'Something is wrong!' });
   }
-  const token = signToken(user.username, user.password, user._id);
+  const token = signToken(user.username, user.email, user._id);
   return res.json({ token, user });
 };
 
 // login a user, sign a token, and send it back (to client/src/components/LoginForm.js)
 // {body} is destructured req.body
 export const login = async (req: Request, res: Response) => {
-  const user = await User.findOne({ $or: [{ username: req.body.username }, { email: req.body.email }] });
-  if (!user) {
-    return res.status(400).json({ message: "Can't find this user" });
-  }
+  try {
+    const { email, password } = req.body;
 
-  const correctPw = await user.isCorrectPassword(req.body.password);
+    const user = await User.findOne({ email }) as UserDocument;
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
 
-  if (!correctPw) {
-    return res.status(400).json({ message: 'Wrong password!' });
+    const isPasswordCorrect = await user.isCorrectPassword(password);
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ message: 'Incorrect password' });
+    }
+
+    const token = signToken(user.username, user.email, user._id.toString());
+    return res.json({ token, user }); // Ensure a return here
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Internal server error' }); // Add return here
   }
-  const token = signToken(user.username, user.password, user._id);
-  return res.json({ token, user });
 };
 
 // save a book to a user's `savedBooks` field by adding it to the set (to prevent duplicates)
